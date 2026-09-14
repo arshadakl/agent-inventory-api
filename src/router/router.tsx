@@ -10,6 +10,7 @@ import {
   EditPropertyPage,
 } from "@/features/properties/property-form-pages";
 import { DashboardLayout } from "@/layouts/dashboard-layout";
+import { UsersPage } from "@/features/users/users-page";
 
 export const router = createBrowserRouter([
   {
@@ -48,12 +49,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "/users",
-                element: (
-                  <PagePlaceholder
-                    description="User management will appear here."
-                    title="Users"
-                  />
-                ),
+                element: <UsersPage />,
               },
             ],
           },
