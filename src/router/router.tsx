@@ -4,6 +4,7 @@ import { App } from "@/App";
 import { PagePlaceholder } from "@/components/page-placeholder";
 import { ProtectedRoute, PublicOnlyRoute } from "@/features/auth/auth-guards";
 import { LoginPage } from "@/features/auth/login-page";
+import { InventoryPage } from "@/features/properties/inventory-page";
 import { DashboardLayout } from "@/layouts/dashboard-layout";
 
 export const router = createBrowserRouter([
@@ -31,12 +32,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: "/properties",
-                element: (
-                  <PagePlaceholder
-                    description="Property inventory management will appear here."
-                    title="Properties"
-                  />
-                ),
+                element: <InventoryPage />,
               },
               {
                 path: "/users",
