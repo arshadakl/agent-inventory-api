@@ -5,6 +5,7 @@ export interface Bindings {
 }
 
 export interface WorkerVariables {
+  apiKeyId: string;
   currentUser: AuthenticatedUser;
   requestId: string;
   sessionToken: string;

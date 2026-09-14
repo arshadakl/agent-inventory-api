@@ -9,9 +9,15 @@ import { SESSION_COOKIE_NAME } from "../lib/session";
 import { findUserBySessionToken } from "../services/auth.service";
 
 const LOGIN_PATH = "/api/auth/login";
+const INTEGRATION_PATH_PREFIX = "/api/v1/";
 
 export const requireAuthentication = createMiddleware<WorkerEnvironment>(
   async (context, next) => {
+    if (context.req.path.startsWith(INTEGRATION_PATH_PREFIX)) {
+      await next();
+      return;
+    }
+
     if (context.req.method === "POST" && context.req.path === LOGIN_PATH) {
       await next();
       return;

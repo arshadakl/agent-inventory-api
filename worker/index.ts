@@ -3,9 +3,11 @@ import { logger } from "hono/logger";
 
 import type { WorkerEnvironment } from "./env";
 import { requireAuthentication } from "./middleware/auth";
+import { requireApiKey } from "./middleware/api-key";
 import { requireSameOrigin } from "./middleware/origin";
 import { errorResponse } from "./lib/response";
 import { authRoutes } from "./routes/auth";
+import { apiKeyRoutes } from "./routes/api-keys";
 import { propertyRoutes } from "./routes/properties";
 import { dashboardRoutes } from "./routes/dashboard";
 import { userRoutes } from "./routes/users";
@@ -23,8 +25,10 @@ app.use("/api/*", async (context, next) => {
 
 app.use("/api/*", requireSameOrigin);
 app.use("/api/*", requireAuthentication);
+app.use("/api/v1/actions/*", requireApiKey);
 
 app.route("/api/auth", authRoutes);
+app.route("/api/api-keys", apiKeyRoutes);
 app.route("/api/properties", propertyRoutes);
 app.route("/api/dashboard", dashboardRoutes);
 app.route("/api/users", userRoutes);

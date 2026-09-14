@@ -5,9 +5,15 @@ import { errorResponse } from "../lib/response";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
+const INTEGRATION_PATH_PREFIX = "/api/v1/";
 
 export const requireSameOrigin = createMiddleware<WorkerEnvironment>(
   async (context, next) => {
+    if (context.req.path.startsWith(INTEGRATION_PATH_PREFIX)) {
+      await next();
+      return;
+    }
+
     if (SAFE_METHODS.has(context.req.method)) {
       await next();
       return;
