@@ -8,11 +8,12 @@ describe("D1 initial schema", () => {
     const result = await env.DB.prepare(
       `SELECT name
        FROM sqlite_master
-       WHERE type = 'table' AND name IN ('users', 'sessions', 'properties')
+       WHERE type = 'table' AND name IN ('users', 'sessions', 'properties', 'api_keys')
        ORDER BY name`,
     ).all<{ name: string }>();
 
     expect(result.results.map(({ name }) => name)).toEqual([
+      "api_keys",
       "properties",
       "sessions",
       "users",
@@ -50,6 +51,33 @@ describe("D1 initial schema", () => {
       .bind(userId)
       .first();
     expect(session).toBeNull();
+  });
+
+  it("preserves API keys while clearing their deleted creator", async () => {
+    const userId = "00000000-0000-4000-8000-000000000006";
+    await insertUser(userId, "key-owner@example.com");
+    await env.DB.prepare(
+      `INSERT INTO api_keys (
+        id, name, key_prefix, token_hash, created_by_user_id
+      ) VALUES (?, ?, ?, ?, ?)`,
+    )
+      .bind(
+        "00000000-0000-4000-8000-000000000007",
+        "n8n",
+        "rei_live_test",
+        "token-hash",
+        userId,
+      )
+      .run();
+
+    await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
+
+    const apiKey = await env.DB.prepare(
+      "SELECT created_by_user_id FROM api_keys WHERE key_prefix = ?",
+    )
+      .bind("rei_live_test")
+      .first<{ created_by_user_id: string | null }>();
+    expect(apiKey?.created_by_user_id).toBeNull();
   });
 
   it("rejects property values outside domain constraints", async () => {
