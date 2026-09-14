@@ -1,15 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   Building2,
   CheckCircle2,
   Cloud,
   Database,
-  RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
-import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,34 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-const healthResponseSchema = z.object({
-  data: z.object({
-    service: z.string(),
-    status: z.literal("ok"),
-  }),
-});
-
-type HealthResponse = z.infer<typeof healthResponseSchema>;
-
-async function getHealth(): Promise<HealthResponse> {
-  const response = await fetch("/api/health", { credentials: "same-origin" });
-
-  if (!response.ok) {
-    throw new Error("The API health check failed.");
-  }
-
-  return healthResponseSchema.parse(await response.json());
-}
-
 export function App() {
-  const healthQuery = useQuery({
-    queryKey: ["health"],
-    queryFn: getHealth,
-    retry: 1,
-  });
-
-  const isOnline = healthQuery.data?.data.status === "ok";
-
   return (
     <main className="min-h-svh bg-background px-5 py-10 text-foreground sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-5xl flex-col gap-10">
@@ -71,7 +41,7 @@ export function App() {
                 aria-hidden="true"
                 className="size-4 text-emerald-600"
               />
-              Foundation ready
+              Authentication backend ready
             </Badge>
             <div className="space-y-3">
               <h2 className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -79,8 +49,8 @@ export function App() {
               </h2>
               <p className="max-w-xl text-base leading-7 text-muted-foreground">
                 The React application, Cloudflare Worker API, and D1 binding are
-                configured as one deployable application. Authentication and
-                inventory workflows are next.
+                configured as one deployable application. Initial-user
+                provisioning and the authenticated dashboard shell are next.
               </p>
             </div>
           </div>
@@ -95,10 +65,8 @@ export function App() {
                   </CardDescription>
                 </div>
                 <span
-                  aria-label={
-                    isOnline ? "API online" : "API status unavailable"
-                  }
-                  className={`mt-1 size-2.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-muted-foreground/40"}`}
+                  aria-label="Protected API configured"
+                  className="mt-1 size-2.5 rounded-full bg-emerald-500"
                 />
               </CardHeader>
 
@@ -118,33 +86,10 @@ export function App() {
 
                 <Separator className="my-5" />
 
-                {healthQuery.isPending ? (
-                  <p className="text-sm text-muted-foreground" role="status">
-                    Checking API connectivity...
-                  </p>
-                ) : healthQuery.isError ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-destructive">
-                      API is unavailable.
-                    </p>
-                    <Button
-                      onClick={() => healthQuery.refetch()}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <RefreshCw aria-hidden="true" className="size-4" />
-                      Retry
-                    </Button>
-                  </div>
-                ) : (
-                  <p
-                    className="flex items-center gap-2 text-sm font-medium text-emerald-700"
-                    role="status"
-                  >
-                    <CheckCircle2 aria-hidden="true" className="size-4" />
-                    API is online
-                  </p>
-                )}
+                <p className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                  <ShieldCheck aria-hidden="true" className="size-4" />
+                  Session authentication enabled
+                </p>
               </CardContent>
             </Card>
           </aside>

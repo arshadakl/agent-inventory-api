@@ -2,6 +2,10 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 
 import type { WorkerEnvironment } from "./env";
+import { requireAuthentication } from "./middleware/auth";
+import { requireSameOrigin } from "./middleware/origin";
+import { errorResponse } from "./lib/response";
+import { authRoutes } from "./routes/auth";
 
 const app = new Hono<WorkerEnvironment>();
 
@@ -14,6 +18,11 @@ app.use("/api/*", async (context, next) => {
   await next();
 });
 
+app.use("/api/*", requireSameOrigin);
+app.use("/api/*", requireAuthentication);
+
+app.route("/api/auth", authRoutes);
+
 app.get("/api/health", (context) =>
   context.json({
     data: {
@@ -24,14 +33,11 @@ app.get("/api/health", (context) =>
 );
 
 app.notFound((context) =>
-  context.json(
-    {
-      error: {
-        code: "NOT_FOUND",
-        message: "The requested resource was not found.",
-      },
-    },
+  errorResponse(
+    context,
     404,
+    "NOT_FOUND",
+    "The requested resource was not found.",
   ),
 );
 
