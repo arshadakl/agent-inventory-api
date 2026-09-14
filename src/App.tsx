@@ -8,7 +8,16 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const healthResponseSchema = z.object({
   data: z.object({
@@ -57,13 +66,13 @@ export function App() {
 
         <section className="grid gap-8 lg:grid-cols-[1.45fr_1fr] lg:items-start">
           <div className="space-y-5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm">
+            <Badge className="gap-2 px-3 py-1 text-sm" variant="outline">
               <CheckCircle2
                 aria-hidden="true"
                 className="size-4 text-emerald-600"
               />
               Foundation ready
-            </span>
+            </Badge>
             <div className="space-y-3">
               <h2 className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
                 One reliable workspace for property inventory.
@@ -76,62 +85,68 @@ export function App() {
             </div>
           </div>
 
-          <aside className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium">System status</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Worker API connectivity
-                </p>
-              </div>
-              <span
-                aria-label={isOnline ? "API online" : "API status unavailable"}
-                className={`mt-1 size-2.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-muted-foreground/40"}`}
-              />
-            </div>
-
-            <div className="mt-6 space-y-3 text-sm">
-              <StatusRow
-                icon={Cloud}
-                label="Runtime"
-                value="Cloudflare Workers"
-              />
-              <StatusRow
-                icon={Database}
-                label="Database"
-                value="D1 configured"
-              />
-            </div>
-
-            <div className="mt-6 border-t border-border pt-4">
-              {healthQuery.isPending ? (
-                <p className="text-sm text-muted-foreground" role="status">
-                  Checking API connectivity…
-                </p>
-              ) : healthQuery.isError ? (
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-destructive">
-                    API is unavailable.
-                  </p>
-                  <Button
-                    onClick={() => healthQuery.refetch()}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <RefreshCw aria-hidden="true" className="size-4" />
-                    Retry
-                  </Button>
+          <aside aria-label="System status">
+            <Card>
+              <CardHeader className="flex-row items-start justify-between gap-4">
+                <div>
+                  <CardTitle>System status</CardTitle>
+                  <CardDescription className="mt-1">
+                    Worker API connectivity
+                  </CardDescription>
                 </div>
-              ) : (
-                <p
-                  className="flex items-center gap-2 text-sm font-medium text-emerald-700"
-                  role="status"
-                >
-                  <CheckCircle2 aria-hidden="true" className="size-4" />
-                  API is online
-                </p>
-              )}
-            </div>
+                <span
+                  aria-label={
+                    isOnline ? "API online" : "API status unavailable"
+                  }
+                  className={`mt-1 size-2.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-muted-foreground/40"}`}
+                />
+              </CardHeader>
+
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <StatusRow
+                    icon={Cloud}
+                    label="Runtime"
+                    value="Cloudflare Workers"
+                  />
+                  <StatusRow
+                    icon={Database}
+                    label="Database"
+                    value="D1 configured"
+                  />
+                </div>
+
+                <Separator className="my-5" />
+
+                {healthQuery.isPending ? (
+                  <p className="text-sm text-muted-foreground" role="status">
+                    Checking API connectivity...
+                  </p>
+                ) : healthQuery.isError ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm text-destructive">
+                      API is unavailable.
+                    </p>
+                    <Button
+                      onClick={() => healthQuery.refetch()}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <RefreshCw aria-hidden="true" className="size-4" />
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <p
+                    className="flex items-center gap-2 text-sm font-medium text-emerald-700"
+                    role="status"
+                  >
+                    <CheckCircle2 aria-hidden="true" className="size-4" />
+                    API is online
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </aside>
         </section>
       </div>

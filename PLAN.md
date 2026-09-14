@@ -48,6 +48,7 @@ Treat this document as an implementation contract. Optimize for correctness, cla
 
 ### Frontend quality and accessibility
 
+- Use Tailwind CSS utilities and shadcn/ui primitives as the application design system. Extend shared semantic tokens and reusable UI components instead of introducing page-specific CSS conventions or another component library.
 - Use semantic HTML, associated labels, keyboard-operable controls, visible focus states, and accessible dialog titles/descriptions. Icon-only actions require accessible names.
 - Do not use color as the only status indicator. Maintain readable contrast and usable layouts at mobile, tablet, and desktop widths.
 - Avoid duplicated form state. React Hook Form owns form values; Zod owns validation; server errors are mapped deliberately to fields or a form-level message.
