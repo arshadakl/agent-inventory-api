@@ -9,6 +9,7 @@ import type { Property } from "@shared/types/property";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/lib/toast-context";
 
 import { PropertyForm } from "./components/property-form";
 import {
@@ -22,9 +23,11 @@ const propertyIdSchema = z.uuid();
 export function CreatePropertyPage() {
   const createProperty = useCreateProperty();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   async function submit(input: PropertyInput): Promise<void> {
     await createProperty.mutateAsync(input);
+    toast({ title: "Property added" });
     navigate("/properties", {
       replace: true,
       state: { notice: "Property added successfully." },
@@ -61,9 +64,11 @@ function EditPropertyForm({ id }: { id: string }) {
   const property = useProperty(id);
   const updateProperty = useUpdateProperty(id);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   async function submit(input: PropertyInput): Promise<void> {
     await updateProperty.mutateAsync(input);
+    toast({ title: "Property updated" });
     navigate("/properties", {
       replace: true,
       state: { notice: "Property updated successfully." },

@@ -6,6 +6,7 @@ import type { Property } from "@shared/types/property";
 
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/lib/toast-context";
 import { formatInteger } from "@/lib/format";
 
 import { DeletePropertyDialog } from "./components/delete-property-dialog";
@@ -30,6 +31,7 @@ export function InventoryPage() {
   const filters = readPropertyFilters(searchParams);
   const properties = useProperties(filters);
   const deleteProperty = useDeleteProperty();
+  const { toast } = useToast();
 
   const updateFilter = useCallback(
     (name: Parameters<typeof setPropertyFilter>[1], value: string) => {
@@ -48,6 +50,7 @@ export function InventoryPage() {
 
     try {
       await deleteProperty.mutateAsync(propertyToDelete.id);
+      toast({ title: "Property deleted" });
       setPropertyToDelete(null);
     } catch {
       // Keep the dialog open so the user can retry without losing context.

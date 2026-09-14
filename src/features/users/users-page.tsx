@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/lib/toast-context";
 import {
   Table,
   TableBody,
@@ -28,6 +29,7 @@ export function UsersPage() {
   const currentUser = useCurrentUser();
   const deleteUser = useDeleteUser();
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const { toast } = useToast();
 
   function requestDelete(user: User): void {
     deleteUser.reset();
@@ -39,6 +41,7 @@ export function UsersPage() {
 
     try {
       await deleteUser.mutateAsync(userToDelete.id);
+      toast({ title: "User deleted" });
       setUserToDelete(null);
     } catch {
       // Keep the confirmation open so the user can retry.

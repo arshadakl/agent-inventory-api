@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/lib/toast-context";
 import { ApiClientError } from "@/lib/api-client";
 
 import { useCreateUser } from "../user-hooks";
@@ -35,6 +36,7 @@ type AddUserInput = z.infer<typeof addUserSchema>;
 export function AddUserDialog() {
   const [open, setOpen] = useState(false);
   const createUser = useCreateUser();
+  const { toast } = useToast();
   const form = useForm<AddUserInput>({
     resolver: zodResolver(addUserSchema),
     defaultValues: { email: "", password: "", confirmPassword: "" },
@@ -56,6 +58,7 @@ export function AddUserDialog() {
         email: input.email,
         password: input.password,
       });
+      toast({ title: "User created" });
       setOpen(false);
       form.reset();
     } catch (error) {
