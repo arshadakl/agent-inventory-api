@@ -47,16 +47,28 @@ npm run user:create -- --remote --email owner@example.com
 
 The command collects and confirms the password through masked prompts; passwords are never accepted as command-line arguments. Remote provisioning also requires typing the normalized email as an explicit confirmation. Before using `--remote`, replace the placeholder `database_id` in `wrangler.jsonc` with the real D1 database ID and authenticate Wrangler with Cloudflare.
 
-## Authentication API
+## API
 
-The Worker implements server-side session authentication:
+All API routes are served by the same Worker as the SPA. Requests use same-origin `/api/...` URLs and require a server-side session unless marked public.
 
 ```text
-POST /api/auth/login   public
-GET  /api/auth/me      authenticated
-POST /api/auth/logout  authenticated
+POST   /api/auth/login             public
+GET    /api/auth/me                authenticated
+POST   /api/auth/logout            authenticated
+
+GET    /api/dashboard/stats        authenticated
+
+GET    /api/properties             authenticated
+POST   /api/properties             authenticated
+GET    /api/properties/:id         authenticated
+PATCH  /api/properties/:id         authenticated
+DELETE /api/properties/:id         authenticated
+
+GET    /api/users                  authenticated
+POST   /api/users                  authenticated
+DELETE /api/users/:id              authenticated
 ```
 
-All other `/api/*` routes require an unexpired session. Passwords use PBKDF2-HMAC-SHA256, while D1 stores only password hashes and SHA-256 session-token hashes. Browser sessions use an HttpOnly, SameSite=Lax cookie.
+Property listing supports `q`, `listingType`, `status`, `propertyType`, `page`, and `pageSize` query parameters. Passwords use PBKDF2-HMAC-SHA256, while D1 stores only password hashes and SHA-256 session-token hashes. Browser sessions use an HttpOnly, SameSite=Lax cookie.
 
-The login interface is delivered in the next implementation phase.
+There is no public registration endpoint. The responsive application supports login, dashboard inventory counts, property CRUD, user management, and logout.
