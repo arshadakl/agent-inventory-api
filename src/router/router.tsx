@@ -5,6 +5,10 @@ import { PagePlaceholder } from "@/components/page-placeholder";
 import { ProtectedRoute, PublicOnlyRoute } from "@/features/auth/auth-guards";
 import { LoginPage } from "@/features/auth/login-page";
 import { InventoryPage } from "@/features/properties/inventory-page";
+import {
+  CreatePropertyPage,
+  EditPropertyPage,
+} from "@/features/properties/property-form-pages";
 import { DashboardLayout } from "@/layouts/dashboard-layout";
 
 export const router = createBrowserRouter([
@@ -33,6 +37,14 @@ export const router = createBrowserRouter([
               {
                 path: "/properties",
                 element: <InventoryPage />,
+              },
+              {
+                path: "/properties/new",
+                element: <CreatePropertyPage />,
+              },
+              {
+                path: "/properties/:id/edit",
+                element: <EditPropertyPage />,
               },
               {
                 path: "/users",

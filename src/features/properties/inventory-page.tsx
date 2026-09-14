@@ -1,6 +1,6 @@
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Plus } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import type { Property } from "@shared/types/property";
 
@@ -57,14 +57,22 @@ export function InventoryPage() {
   return (
     <main className="p-5 sm:p-8 lg:p-10">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header>
-          <p className="text-sm font-medium text-primary">Inventory</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Properties
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Search, filter, and maintain your property portfolio.
-          </p>
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-primary">Inventory</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Properties
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Search, filter, and maintain your property portfolio.
+            </p>
+          </div>
+          <Button asChild>
+            <Link to="/properties/new">
+              <Plus aria-hidden="true" className="size-4" />
+              Add property
+            </Link>
+          </Button>
         </header>
 
         <InventoryFilters filters={filters} onChange={updateFilter} />

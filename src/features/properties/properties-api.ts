@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   propertySchema,
+  type PropertyInput,
   type PropertyListQuery,
 } from "@shared/schemas/property";
 
@@ -16,6 +17,7 @@ const propertyListSchema = z.object({
     totalPages: z.number().int().nonnegative(),
   }),
 });
+const propertyResponseSchema = z.object({ property: propertySchema });
 
 export async function getProperties(query: PropertyListQuery) {
   const searchParams = new URLSearchParams();
@@ -35,4 +37,22 @@ export async function getProperties(query: PropertyListQuery) {
 
 export async function deleteProperty(id: string): Promise<void> {
   return apiRequestVoid(`/api/properties/${id}`, { method: "DELETE" });
+}
+
+export async function getProperty(id: string) {
+  return apiRequest(`/api/properties/${id}`, propertyResponseSchema);
+}
+
+export async function createProperty(input: PropertyInput) {
+  return apiRequest("/api/properties", propertyResponseSchema, {
+    method: "POST",
+    body: input,
+  });
+}
+
+export async function updateProperty(id: string, input: PropertyInput) {
+  return apiRequest(`/api/properties/${id}`, propertyResponseSchema, {
+    method: "PATCH",
+    body: input,
+  });
 }

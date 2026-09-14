@@ -1,4 +1,5 @@
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import type { Property } from "@shared/types/property";
 
@@ -59,7 +60,7 @@ export function InventoryResults({
                   {formatInteger(property.price)}
                 </TableCell>
                 <TableCell>
-                  <DeleteButton onDelete={onDelete} property={property} />
+                  <PropertyActions onDelete={onDelete} property={property} />
                 </TableCell>
               </TableRow>
             ))}
@@ -79,7 +80,7 @@ export function InventoryResults({
                   {property.location}
                 </p>
               </div>
-              <DeleteButton onDelete={onDelete} property={property} />
+              <PropertyActions onDelete={onDelete} property={property} />
             </CardHeader>
             <CardContent className="flex flex-wrap items-center gap-2 px-5">
               <PropertyStatusBadge status={property.status} />
@@ -98,7 +99,7 @@ export function InventoryResults({
   );
 }
 
-function DeleteButton({
+function PropertyActions({
   onDelete,
   property,
 }: {
@@ -106,15 +107,25 @@ function DeleteButton({
   property: Property;
 }) {
   return (
-    <Button
-      aria-label={`Delete ${property.title}`}
-      onClick={() => onDelete(property)}
-      size="icon"
-      type="button"
-      variant="ghost"
-    >
-      <Trash2 aria-hidden="true" className="size-4" />
-    </Button>
+    <div className="flex items-center justify-end gap-1">
+      <Button asChild size="icon" variant="ghost">
+        <Link
+          aria-label={`Edit ${property.title}`}
+          to={`/properties/${property.id}/edit`}
+        >
+          <Pencil aria-hidden="true" className="size-4" />
+        </Link>
+      </Button>
+      <Button
+        aria-label={`Delete ${property.title}`}
+        onClick={() => onDelete(property)}
+        size="icon"
+        type="button"
+        variant="ghost"
+      >
+        <Trash2 aria-hidden="true" className="size-4" />
+      </Button>
+    </div>
   );
 }
 
