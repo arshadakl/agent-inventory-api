@@ -287,7 +287,8 @@ function SecretDialog({
         <DialogHeader>
           <DialogTitle>Copy your API key</DialogTitle>
           <DialogDescription>
-            This is the only time the full secret can be viewed.
+            Copy and store this key now. This is the only time the full secret
+            can be viewed.
           </DialogDescription>
         </DialogHeader>
         <code className="block break-all rounded-md bg-muted p-3 text-xs">
@@ -296,7 +297,7 @@ function SecretDialog({
         <DialogFooter>
           <Button onClick={() => void copySecret()} type="button">
             <Copy aria-hidden="true" className="size-4" />
-            Copy key
+            Copy API key
           </Button>
         </DialogFooter>
       </DialogContent>
