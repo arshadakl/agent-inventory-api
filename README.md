@@ -4,6 +4,8 @@ An internal real-estate inventory dashboard built as a single Cloudflare Worker 
 
 The implementation contract and delivery phases are documented in [PLAN.md](./PLAN.md).
 
+The n8n action endpoint is documented in [N8N_API.md](./N8N_API.md).
+
 ## Prerequisites
 
 - Node.js 22 or newer
