@@ -77,12 +77,12 @@ Use one shared Zod property schema on both client and Worker. Validate again in 
 
 All API errors must use `{ "error": { "code", "message", "fields"? } }`; do not expose D1 details or stack traces. Use status codes: 200 success, 201 creation, 204 deletion/logout, 400 malformed request, 401 unauthenticated, 404 missing resource, 409 conflicts, and 500 unexpected failures.
 
-| Area | Endpoint and behavior |
-| --- | --- |
-| Auth | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
-| Users | `GET /api/users`, `POST /api/users`, `DELETE /api/users/:id` |
+| Area       | Endpoint and behavior                                                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Auth       | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`                                                                 |
+| Users      | `GET /api/users`, `POST /api/users`, `DELETE /api/users/:id`                                                                        |
 | Properties | `GET /api/properties`, `GET /api/properties/:id`, `POST /api/properties`, `PATCH /api/properties/:id`, `DELETE /api/properties/:id` |
-| Dashboard | `GET /api/dashboard/stats` |
+| Dashboard  | `GET /api/dashboard/stats`                                                                                                          |
 
 List properties with `q`, `listingType`, `status`, `propertyType`, `page`, and `pageSize`; default to page 1 and 20 items, cap page size at 100, search title/location with parameterized `LIKE`, combine filters, and sort newest first. Return items plus `{ page, pageSize, total, totalPages }`.
 
