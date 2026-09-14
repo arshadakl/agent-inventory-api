@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "real-estate-inventory",
+  "account_id": "19de0ffe0cb6da6ac653ab81e0a9f196",
   "main": "./worker/index.ts",
   "compatibility_date": "2026-09-14",
   "assets": {
@@ -11,7 +12,7 @@
     {
       "binding": "DB",
       "database_name": "real-estate-inventory",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "dcd61b33-8c0f-417d-bfd9-90c9e52bc170",
       "migrations_dir": "migrations",
     },
   ],
