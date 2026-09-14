@@ -1,10 +1,58 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 
 import { App } from "@/App";
+import { PagePlaceholder } from "@/components/page-placeholder";
+import { ProtectedRoute, PublicOnlyRoute } from "@/features/auth/auth-guards";
+import { LoginPage } from "@/features/auth/login-page";
+import { DashboardLayout } from "@/layouts/dashboard-layout";
 
 export const router = createBrowserRouter([
   {
-    path: "*",
     element: <App />,
+    children: [
+      {
+        element: <PublicOnlyRoute />,
+        children: [{ path: "/login", element: <LoginPage /> }],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            element: <DashboardLayout />,
+            children: [
+              {
+                path: "/dashboard",
+                element: (
+                  <PagePlaceholder
+                    description="Inventory statistics will appear here."
+                    title="Dashboard"
+                  />
+                ),
+              },
+              {
+                path: "/properties",
+                element: (
+                  <PagePlaceholder
+                    description="Property inventory management will appear here."
+                    title="Properties"
+                  />
+                ),
+              },
+              {
+                path: "/users",
+                element: (
+                  <PagePlaceholder
+                    description="User management will appear here."
+                    title="Users"
+                  />
+                ),
+              },
+            ],
+          },
+        ],
+      },
+      { path: "/", element: <Navigate replace to="/dashboard" /> },
+      { path: "*", element: <Navigate replace to="/dashboard" /> },
+    ],
   },
 ]);
