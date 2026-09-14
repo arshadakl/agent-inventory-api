@@ -23,6 +23,44 @@ Use a single-project structure with `src/` for the SPA, `worker/` for Worker rou
 
 Required scripts: `dev`, `build`, `preview`, `deploy`, `db:migrate:local`, `db:migrate:remote`, `typecheck`, `lint`, `test`, `test:watch`, and `user:create`.
 
+## Engineering standards
+
+Treat this document as an implementation contract. Optimize for correctness, clarity, and maintainability rather than cleverness or speed of code generation.
+
+### Code quality
+
+- Enable strict TypeScript. Do not introduce `any`, non-null assertions, or unsafe type casts to bypass the compiler; narrow unknown values at system boundaries.
+- Keep functions small and cohesive. Prefer descriptive names, guard clauses, immutable values, and explicit return types on exported functions.
+- Keep React components focused on rendering and user interaction. Put server-state orchestration in feature hooks, request concerns in the API client, validation in shared schemas, and business/database logic in Worker services.
+- Keep Hono route handlers thin: parse input, call a service, and translate the result into an HTTP response. Services must not depend on Hono request/response objects.
+- Centralize DB-to-domain mapping, API error creation, query keys, shared enums, and validation. Do not duplicate domain rules or scatter magic strings and status codes.
+- Prefer composition over inheritance and direct code over speculative abstractions. Extract shared code only when it represents a stable domain concept or removes meaningful duplication.
+- Comments must explain intent, invariants, or tradeoffs—not restate the code. Remove dead code and do not commit commented-out implementations.
+- Keep modules easy to scan: imports, local types/constants, exported implementation, then private helpers. Use consistent formatting enforced by repository tooling.
+
+### Boundaries and failure handling
+
+- Treat HTTP input, cookies, URL parameters, D1 records, and environment bindings as untrusted boundaries. Validate or map them before use.
+- Model expected failures explicitly and return safe, actionable errors. Unexpected failures are logged with useful context on the server and returned as `INTERNAL_ERROR` without sensitive details.
+- Do not silently swallow errors. Avoid catch-all fallbacks that make corrupt or invalid data look successful.
+- Keep side effects at the edges. Favor pure validation, mapping, filtering, and formatting helpers that can be tested without Workers bindings or React rendering.
+- Make mutations idempotent where practical, invalidate only the affected query keys, and prevent stale UI after create/update/delete operations.
+
+### Frontend quality and accessibility
+
+- Use semantic HTML, associated labels, keyboard-operable controls, visible focus states, and accessible dialog titles/descriptions. Icon-only actions require accessible names.
+- Do not use color as the only status indicator. Maintain readable contrast and usable layouts at mobile, tablet, and desktop widths.
+- Avoid duplicated form state. React Hook Form owns form values; Zod owns validation; server errors are mapped deliberately to fields or a form-level message.
+- Preserve filters and pagination in the URL. Reset the page when a filter changes and avoid race-prone manual request state when TanStack Query can own it.
+
+### Testing and review discipline
+
+- Test public behavior, authorization boundaries, domain rules, and failure cases rather than private implementation details.
+- Every bug fix must include a regression test when the failure can be reproduced deterministically.
+- Keep tests deterministic: control time/data explicitly, isolate D1 state, and do not depend on test order or external services.
+- Before every phase commit, review the staged diff for secrets, accidental generated files, debug output, scope creep, and unrelated edits; then run the checks relevant to that phase.
+- A phase is complete only when its implementation, tests, error/loading states, documentation impact, and acceptance criteria are satisfied. Never commit known failing checks.
+
 ## Data model and validation
 
 Create `migrations/0001_initial.sql` containing:
