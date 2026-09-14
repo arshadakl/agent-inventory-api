@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import type { WorkerEnvironment } from "../env";
 import { getCurrentUser } from "../middleware/auth";
 import { clearSessionCookie, setSessionCookie } from "../lib/cookies";
+import { readJsonBody } from "../lib/request";
 import { errorResponse, getZodFieldErrors } from "../lib/response";
 import {
   authenticateCredentials,
@@ -68,13 +69,3 @@ authRoutes.post("/logout", async (context) => {
 
   return context.body(null, 204);
 });
-
-type JsonBodyResult = { ok: true; value: unknown } | { ok: false };
-
-async function readJsonBody(request: Request): Promise<JsonBodyResult> {
-  try {
-    return { ok: true, value: await request.json() };
-  } catch {
-    return { ok: false };
-  }
-}

@@ -6,6 +6,7 @@ import { requireAuthentication } from "./middleware/auth";
 import { requireSameOrigin } from "./middleware/origin";
 import { errorResponse } from "./lib/response";
 import { authRoutes } from "./routes/auth";
+import { propertyRoutes } from "./routes/properties";
 
 const app = new Hono<WorkerEnvironment>();
 
@@ -22,6 +23,7 @@ app.use("/api/*", requireSameOrigin);
 app.use("/api/*", requireAuthentication);
 
 app.route("/api/auth", authRoutes);
+app.route("/api/properties", propertyRoutes);
 
 app.get("/api/health", (context) =>
   context.json({
