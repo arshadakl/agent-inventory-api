@@ -4,4 +4,5 @@ export const queryKeys = {
   properties: ["properties"] as const,
   users: ["users"] as const,
   dashboard: ["dashboard"] as const,
+  apiKeys: ["api-keys"] as const,
 } as const;

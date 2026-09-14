@@ -4,9 +4,9 @@
 
 Build an internal real-estate inventory dashboard as one repository and **one Cloudflare Worker deployment**. The Worker serves the React/Vite static SPA and the Hono API under the same domain, with Cloudflare D1 as its database.
 
-The MVP includes login, dashboard metrics, property CRUD with searchable/filterable pagination, and user list/create/delete. All authenticated users have identical permissions.
+The MVP includes login, dashboard metrics, property CRUD with searchable/filterable pagination, user list/create/delete, and read-only n8n inventory actions protected by dashboard-managed API keys. All authenticated users have identical permissions.
 
-Do not build separate frontend/API deployments, Cloudflare Pages, public signup, roles/RBAC, password resets, property images, R2, maps, leads, customers, owners, imports/exports, analytics charts, automation, payments, audit logs, or other v2 features.
+Do not build separate frontend/API deployments, Cloudflare Pages, public signup, roles/RBAC, password resets, property images, R2, maps, leads, customers, owners, imports/exports, analytics charts, payments, audit logs, or other v2 features. The only automation exception is the read-only n8n inventory integration described below.
 
 ## Required architecture and stack
 
@@ -84,6 +84,8 @@ All API errors must use `{ "error": { "code", "message", "fields"? } }`; do not 
 | Users      | `GET /api/users`, `POST /api/users`, `DELETE /api/users/:id`                                                                        |
 | Properties | `GET /api/properties`, `GET /api/properties/:id`, `POST /api/properties`, `PATCH /api/properties/:id`, `DELETE /api/properties/:id` |
 | Dashboard  | `GET /api/dashboard/stats`                                                                                                          |
+| API keys   | `GET /api/api-keys`, `POST /api/api-keys`, `DELETE /api/api-keys/:id`                                                               |
+| n8n        | `POST /api/v1/actions/execute` using `Authorization: Bearer <api-key>`                                                              |
 
 List properties with `q`, `listingType`, `status`, `propertyType`, `page`, and `pageSize`; default to page 1 and 20 items, cap page size at 100, search title/location with parameterized `LIKE`, combine filters, and sort newest first. Return items plus `{ page, pageSize, total, totalPages }`.
 
@@ -101,6 +103,7 @@ Do not create a registration endpoint. `scripts/create-initial-user.ts` must pro
 - Worker middleware protects every API route except login. Frontend route protection is only UX.
 - Reject attempts to delete the currently authenticated user with `409 CANNOT_DELETE_SELF`; deleting another user cascades their sessions.
 - Check `Origin` against the request host for `POST`, `PATCH`, `PUT`, and `DELETE` requests.
+- API keys use high-entropy `rei_live_...` secrets, store only SHA-256 hashes, are shown only at creation, and can be revoked. The n8n action route accepts Bearer keys without browser-origin checks; all dashboard routes continue to require sessions.
 - Use prepared D1 statements and bindings for every user-provided SQL value. Only construct known, trusted SQL fragments dynamically.
 
 ## Frontend behavior

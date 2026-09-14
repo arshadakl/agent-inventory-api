@@ -1,6 +1,7 @@
 import {
   Building2,
   LayoutDashboard,
+  KeyRound,
   LoaderCircle,
   LogOut,
   Menu,
@@ -27,6 +28,7 @@ const navigation = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Properties", to: "/properties", icon: Warehouse },
   { label: "Users", to: "/users", icon: Users },
+  { label: "API keys", to: "/api-keys", icon: KeyRound },
 ] as const;
 
 export function DashboardLayout() {

@@ -85,7 +85,12 @@ apiKeyRoutes.delete("/:id", async (context) => {
   }
 
   if (!(await revokeApiKey(context.env.DB, parsedId.data))) {
-    return errorResponse(context, 404, "NOT_FOUND", "The API key was not found.");
+    return errorResponse(
+      context,
+      404,
+      "NOT_FOUND",
+      "The API key was not found.",
+    );
   }
 
   return context.body(null, 204);

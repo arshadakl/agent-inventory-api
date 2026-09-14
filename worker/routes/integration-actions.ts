@@ -50,9 +50,11 @@ integrationActionRoutes.post("/execute", async (context) => {
 
   try {
     const result = await executeAction(context.env.DB, parsedAction.data);
-    return context.json<ApiData<{ action: string; result: IntegrationResult }>>({
-      data: { action: parsedAction.data.action, result },
-    });
+    return context.json<ApiData<{ action: string; result: IntegrationResult }>>(
+      {
+        data: { action: parsedAction.data.action, result },
+      },
+    );
   } catch (error) {
     if (error instanceof IntegrationPropertyNotFoundError) {
       return errorResponse(context, 404, "NOT_FOUND", error.message);
@@ -69,7 +71,10 @@ async function executeAction(
   switch (action.action) {
     case "search_properties":
       return {
-        properties: await searchPropertiesForIntegration(database, action.input),
+        properties: await searchPropertiesForIntegration(
+          database,
+          action.input,
+        ),
         priceContext,
       };
     case "get_property": {

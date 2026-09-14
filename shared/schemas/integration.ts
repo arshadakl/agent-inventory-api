@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-import {
-  listingTypes,
-  propertyStatuses,
-  propertyTypes,
-} from "./property";
+import { listingTypes, propertyStatuses, propertyTypes } from "./property";
 
 const optionalSearchTextSchema = z
   .string()

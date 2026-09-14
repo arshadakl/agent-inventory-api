@@ -138,7 +138,10 @@ async function createApiKey(name: string): Promise<{
   return createdApiKeyResponseSchema.parse(await response.json()).data;
 }
 
-function authenticatedRequest(path: string, init: RequestInit = {}): Promise<Response> {
+function authenticatedRequest(
+  path: string,
+  init: RequestInit = {},
+): Promise<Response> {
   return request(path, {
     ...init,
     headers: {

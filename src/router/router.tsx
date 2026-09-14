@@ -29,6 +29,9 @@ const EditPropertyPage = lazy(async () => ({
 const UsersPage = lazy(async () => ({
   default: (await import("@/features/users/users-page")).UsersPage,
 }));
+const ApiKeysPage = lazy(async () => ({
+  default: (await import("@/features/api-keys/api-keys-page")).ApiKeysPage,
+}));
 
 export const router = createBrowserRouter([
   {
@@ -94,6 +97,14 @@ export const router = createBrowserRouter([
                 element: (
                   <LazyRoute>
                     <UsersPage />
+                  </LazyRoute>
+                ),
+              },
+              {
+                path: "/api-keys",
+                element: (
+                  <LazyRoute>
+                    <ApiKeysPage />
                   </LazyRoute>
                 ),
               },

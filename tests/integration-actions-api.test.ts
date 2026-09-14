@@ -119,7 +119,11 @@ describe("n8n integration actions", () => {
     });
     expect(await availabilityResponse.json()).toMatchObject({
       data: {
-        result: { propertyId: SOURCE_PROPERTY_ID, status: "available", available: true },
+        result: {
+          propertyId: SOURCE_PROPERTY_ID,
+          status: "available",
+          available: true,
+        },
       },
     });
     expect(await similarResponse.json()).toMatchObject({
@@ -133,7 +137,10 @@ describe("n8n integration actions", () => {
       { method: "POST" },
       env,
     );
-    const invalidResponse = await actionRequest({ action: "unknown", input: {} });
+    const invalidResponse = await actionRequest({
+      action: "unknown",
+      input: {},
+    });
     const missingResponse = await actionRequest({
       action: "get_property",
       input: { propertyId: "00000000-0000-4000-8000-000000000799" },

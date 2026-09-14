@@ -67,8 +67,44 @@ DELETE /api/properties/:id         authenticated
 GET    /api/users                  authenticated
 POST   /api/users                  authenticated
 DELETE /api/users/:id              authenticated
+
+GET    /api/api-keys               authenticated
+POST   /api/api-keys               authenticated
+DELETE /api/api-keys/:id           authenticated
+
+POST   /api/v1/actions/execute     API key required
 ```
 
 Property listing supports `q`, `listingType`, `status`, `propertyType`, `page`, and `pageSize` query parameters. Passwords use PBKDF2-HMAC-SHA256, while D1 stores only password hashes and SHA-256 session-token hashes. Browser sessions use an HttpOnly, SameSite=Lax cookie.
 
 There is no public registration endpoint. The responsive application supports login, dashboard inventory counts, property CRUD, user management, and logout.
+
+## n8n integration
+
+Create a named key from **API keys** in the dashboard and copy the secret when it is shown. The complete secret is never displayed again; create a replacement key if it is lost. n8n uses the key as a Bearer token and can access only the read-only action endpoint.
+
+Configure an n8n **HTTP Request** node as follows:
+
+- Method: `POST`
+- URL: `https://real-estate-inventory.time-fade.workers.dev/api/v1/actions/execute`
+- Authentication: Header auth, `Authorization: Bearer <your-api-key>`
+- Send body as JSON
+
+Example search for a furnished 2-bedroom Dubai Marina rental under AED 90,000 annually:
+
+```json
+{
+  "action": "search_properties",
+  "input": {
+    "location": "Dubai Marina",
+    "listingType": "rent",
+    "furnished": true,
+    "bedrooms": 2,
+    "maxPrice": 90000
+  }
+}
+```
+
+Supported actions are `search_properties`, `get_property`, `check_availability`, and `similar_properties`. Prices are AED; rent prices represent annual rent. `search_properties` returns available listings by default and accepts `q`, `location`, `listingType`, `propertyType`, `furnished`, `bedrooms`, `bathrooms`, `minPrice`, `maxPrice`, `status`, and `limit` (1–20). The other actions require `propertyId`; `similar_properties` also accepts `limit`.
+
+For production, add a Cloudflare rate-limit rule matching `/api/v1/actions/*`: 60 requests per minute per source IP, blocking for 60 seconds. Revoke a key immediately if it is exposed.
