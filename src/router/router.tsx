@@ -1,9 +1,9 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 
 import { App } from "@/App";
-import { PagePlaceholder } from "@/components/page-placeholder";
 import { ProtectedRoute, PublicOnlyRoute } from "@/features/auth/auth-guards";
 import { LoginPage } from "@/features/auth/login-page";
+import { DashboardPage } from "@/features/dashboard/dashboard-page";
 import { InventoryPage } from "@/features/properties/inventory-page";
 import {
   CreatePropertyPage,
@@ -28,12 +28,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: "/dashboard",
-                element: (
-                  <PagePlaceholder
-                    description="Inventory statistics will appear here."
-                    title="Dashboard"
-                  />
-                ),
+                element: <DashboardPage />,
               },
               {
                 path: "/properties",
