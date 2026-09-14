@@ -73,10 +73,10 @@ describe("initial-user provisioning service", () => {
     expect(result?.total).toBe(1);
   });
 
-  it("requires a strong bootstrap password", () => {
+  it("requires an eight-character bootstrap password", () => {
     const result = createUserSchema.safeParse({
       email: "owner@example.com",
-      password: "too-short",
+      password: "short7!",
     });
 
     expect(result.success).toBe(false);

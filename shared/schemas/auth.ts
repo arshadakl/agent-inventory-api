@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const MAX_PASSWORD_LENGTH = 128;
-export const MIN_PASSWORD_LENGTH = 12;
+/**
+ * MVP password floor: long enough to prevent trivial credentials without
+ * adding unnecessary friction to a small, private inventory application.
+ */
+export const MIN_PASSWORD_LENGTH = 8;
 
 export const normalizedEmailSchema = z
   .string()
