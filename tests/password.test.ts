@@ -6,7 +6,7 @@ describe("password hashing", () => {
   it("hashes and verifies a password using the stored PBKDF2 parameters", async () => {
     const passwordHash = await hashPassword("correct horse battery staple");
 
-    expect(passwordHash).toMatch(/^pbkdf2_sha256\$600000\$/u);
+    expect(passwordHash).toMatch(/^pbkdf2_sha256\$100000\$/u);
     await expect(
       verifyPassword("correct horse battery staple", passwordHash),
     ).resolves.toBe(true);

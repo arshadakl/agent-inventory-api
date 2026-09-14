@@ -4,8 +4,9 @@ import { decodeBase64Url, encodeBase64Url } from "./encoding";
 
 const ALGORITHM = "pbkdf2_sha256";
 const HASH_BYTES = 32;
-const ITERATIONS = 600_000;
-const MAX_STORED_ITERATIONS = 1_000_000;
+// Cloudflare Workers supports PBKDF2 iteration counts up to 100,000.
+const ITERATIONS = 100_000;
+const MAX_STORED_ITERATIONS = 100_000;
 const MIN_STORED_ITERATIONS = 100_000;
 const SALT_BYTES = 16;
 
