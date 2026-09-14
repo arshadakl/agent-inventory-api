@@ -5,6 +5,7 @@ import type {
   PropertyListQuery,
   PropertyUpdate,
 } from "@shared/schemas/property";
+import type { SearchPropertiesActionInput } from "@shared/schemas/integration";
 import {
   listingTypes,
   propertyStatuses,
@@ -96,6 +97,60 @@ export async function findPropertyById(
     .first();
 
   return row ? mapPropertyRow(row) : null;
+}
+
+export async function searchPropertiesForIntegration(
+  database: D1Database,
+  input: SearchPropertiesActionInput,
+): Promise<Property[]> {
+  const filters = createIntegrationFilters(input);
+  const whereClause = `WHERE ${filters.clauses.join(" AND ")}`;
+  const result = await database
+    .prepare(
+      `SELECT ${selectColumns}
+       FROM properties
+       ${whereClause}
+       ORDER BY created_at DESC, id DESC
+       LIMIT ?`,
+    )
+    .bind(...filters.values, input.limit)
+    .all();
+
+  return result.results.map(mapPropertyRow);
+}
+
+export async function findSimilarProperties(
+  database: D1Database,
+  property: Property,
+  limit: number,
+): Promise<Property[]> {
+  const minimumPrice = Math.floor(property.price * 0.8);
+  const maximumPrice = Math.ceil(property.price * 1.2);
+  const result = await database
+    .prepare(
+      `SELECT ${selectColumns}
+       FROM properties
+       WHERE id != ?
+         AND status = 'available'
+         AND listing_type = ?
+         AND property_type = ?
+         AND price >= ?
+         AND price <= ?
+       ORDER BY ABS(price - ?) ASC, created_at DESC, id DESC
+       LIMIT ?`,
+    )
+    .bind(
+      property.id,
+      property.listingType,
+      property.propertyType,
+      minimumPrice,
+      maximumPrice,
+      property.price,
+      limit,
+    )
+    .all();
+
+  return result.results.map(mapPropertyRow);
 }
 
 export async function createProperty(
@@ -237,6 +292,37 @@ function createListFilters(query: PropertyListQuery): ListFilters {
   return { clauses, values };
 }
 
+function createIntegrationFilters(
+  input: SearchPropertiesActionInput,
+): ListFilters {
+  const clauses = ["status = ?"];
+  const values: unknown[] = [input.status];
+
+  if (input.q) {
+    addPropertyTextSearchFilter(clauses, values, input.q);
+  }
+
+  if (input.location) {
+    clauses.push("location LIKE ? ESCAPE '\\' COLLATE NOCASE");
+    values.push(`%${escapeLikePattern(input.location)}%`);
+  }
+
+  addEqualityFilter(clauses, values, "listing_type", input.listingType);
+  addEqualityFilter(clauses, values, "property_type", input.propertyType);
+
+  if (input.furnished !== undefined) {
+    clauses.push("furnished = ?");
+    values.push(input.furnished ? 1 : 0);
+  }
+
+  addNumericEqualityFilter(clauses, values, "bedrooms", input.bedrooms);
+  addNumericEqualityFilter(clauses, values, "bathrooms", input.bathrooms);
+  addMinimumFilter(clauses, values, "price", input.minPrice);
+  addMaximumFilter(clauses, values, "price", input.maxPrice);
+
+  return { clauses, values };
+}
+
 function addEqualityFilter(
   clauses: string[],
   values: unknown[],
@@ -245,6 +331,54 @@ function addEqualityFilter(
 ): void {
   if (value) {
     clauses.push(`${column} = ?`);
+    values.push(value);
+  }
+}
+
+function addPropertyTextSearchFilter(
+  clauses: string[],
+  values: unknown[],
+  value: string,
+): void {
+  const searchTerm = `%${escapeLikePattern(value)}%`;
+  clauses.push(
+    "(title LIKE ? ESCAPE '\\' COLLATE NOCASE OR location LIKE ? ESCAPE '\\' COLLATE NOCASE)",
+  );
+  values.push(searchTerm, searchTerm);
+}
+
+function addNumericEqualityFilter(
+  clauses: string[],
+  values: unknown[],
+  column: "bedrooms" | "bathrooms",
+  value: number | undefined,
+): void {
+  if (value !== undefined) {
+    clauses.push(`${column} = ?`);
+    values.push(value);
+  }
+}
+
+function addMinimumFilter(
+  clauses: string[],
+  values: unknown[],
+  column: "price",
+  value: number | undefined,
+): void {
+  if (value !== undefined) {
+    clauses.push(`${column} >= ?`);
+    values.push(value);
+  }
+}
+
+function addMaximumFilter(
+  clauses: string[],
+  values: unknown[],
+  column: "price",
+  value: number | undefined,
+): void {
+  if (value !== undefined) {
+    clauses.push(`${column} <= ?`);
     values.push(value);
   }
 }

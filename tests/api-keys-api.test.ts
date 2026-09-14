@@ -99,7 +99,7 @@ describe("API key API", () => {
       method: "POST",
     });
 
-    expect(authorizedResponse.status).toBe(404);
+    expect(authorizedResponse.status).toBe(400);
     const storedKey = await env.DB.prepare(
       "SELECT last_used_at FROM api_keys WHERE id = ?",
     )
