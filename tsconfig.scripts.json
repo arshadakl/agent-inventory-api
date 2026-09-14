@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.scripts.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
-    "types": ["node"],
+    "types": ["node", "@cloudflare/workers-types"],
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
@@ -14,9 +14,17 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
     "paths": {
       "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "eslint.config.js"]
+  "include": [
+    "scripts",
+    "shared",
+    "worker/lib",
+    "worker/services/users.service.ts",
+    "worker/env.ts"
+  ]
 }
