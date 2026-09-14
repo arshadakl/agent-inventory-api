@@ -34,6 +34,34 @@ All requests use the same endpoint. Select the operation through the JSON `actio
 
 API keys are read-only: they cannot create, update, or delete properties, users, or dashboard keys.
 
+## WhatsApp automation flow
+
+For a WhatsApp workflow, n8n remains the orchestrator:
+
+```text
+WhatsApp Cloud API → n8n incoming router → AI intent router
+→ Inventory API → n8n response formatter → WhatsApp Cloud API
+```
+
+Have the AI intent router return one strict JSON object containing an action and input. Validate that object in n8n before calling the Worker.
+
+```json
+{
+  "action": "search_properties",
+  "input": {
+    "location": "Dubai Marina",
+    "listingType": "rent",
+    "bedrooms": 2,
+    "furnished": true,
+    "maxPrice": 90000
+  }
+}
+```
+
+Use the Worker response as structured data, then let a separate n8n node create the customer-facing WhatsApp message. Keep WhatsApp webhook verification, message deduplication, AI routing, outbound messaging, and workflow logging in n8n.
+
+MCP is not needed for this flow. The REST action endpoint is the intended n8n integration interface.
+
 ## 3. Actions
 
 ### `search_properties`
@@ -146,6 +174,19 @@ Errors use the safe shared envelope:
 | `401`  | Missing, malformed, unknown, or revoked API key.           |
 | `404`  | Requested property does not exist.                         |
 | `500`  | Unexpected server error; no database details are returned. |
+
+For `400`, ask the AI router to retry with a supported action and valid input. For `401`, stop the workflow and replace or restore the n8n credential. For `404`, tell the customer that the requested listing is unavailable and optionally run `similar_properties` when a property ID is known. For `500`, use the n8n error handler and offer human follow-up instead of exposing internal errors.
+
+## Current scope
+
+This API currently supports inventory lookup only. The following WhatsApp workflow features are not available yet and must not be called as API actions:
+
+- Lead creation
+- Conversation memory or message persistence
+- Viewing scheduling
+- Human handoff state or assignment
+
+These require separate Worker actions and D1 data models before they can be integrated into n8n.
 
 ## 5. Security and operations
 
