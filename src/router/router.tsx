@@ -1,16 +1,34 @@
+/* eslint-disable react-refresh/only-export-components -- Route configuration intentionally defines lazy component bindings. */
+import { lazy, Suspense, type ReactNode } from "react";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 
 import { App } from "@/App";
+import { FullPageStatus } from "@/components/full-page-status";
 import { ProtectedRoute, PublicOnlyRoute } from "@/features/auth/auth-guards";
-import { LoginPage } from "@/features/auth/login-page";
-import { DashboardPage } from "@/features/dashboard/dashboard-page";
-import { InventoryPage } from "@/features/properties/inventory-page";
-import {
-  CreatePropertyPage,
-  EditPropertyPage,
-} from "@/features/properties/property-form-pages";
-import { DashboardLayout } from "@/layouts/dashboard-layout";
-import { UsersPage } from "@/features/users/users-page";
+
+const LoginPage = lazy(async () => ({
+  default: (await import("@/features/auth/login-page")).LoginPage,
+}));
+const DashboardLayout = lazy(async () => ({
+  default: (await import("@/layouts/dashboard-layout")).DashboardLayout,
+}));
+const DashboardPage = lazy(async () => ({
+  default: (await import("@/features/dashboard/dashboard-page")).DashboardPage,
+}));
+const InventoryPage = lazy(async () => ({
+  default: (await import("@/features/properties/inventory-page")).InventoryPage,
+}));
+const CreatePropertyPage = lazy(async () => ({
+  default: (await import("@/features/properties/property-form-pages"))
+    .CreatePropertyPage,
+}));
+const EditPropertyPage = lazy(async () => ({
+  default: (await import("@/features/properties/property-form-pages"))
+    .EditPropertyPage,
+}));
+const UsersPage = lazy(async () => ({
+  default: (await import("@/features/users/users-page")).UsersPage,
+}));
 
 export const router = createBrowserRouter([
   {
@@ -18,33 +36,66 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <PublicOnlyRoute />,
-        children: [{ path: "/login", element: <LoginPage /> }],
+        children: [
+          {
+            path: "/login",
+            element: (
+              <LazyRoute>
+                <LoginPage />
+              </LazyRoute>
+            ),
+          },
+        ],
       },
       {
         element: <ProtectedRoute />,
         children: [
           {
-            element: <DashboardLayout />,
+            element: (
+              <LazyRoute>
+                <DashboardLayout />
+              </LazyRoute>
+            ),
             children: [
               {
                 path: "/dashboard",
-                element: <DashboardPage />,
+                element: (
+                  <LazyRoute>
+                    <DashboardPage />
+                  </LazyRoute>
+                ),
               },
               {
                 path: "/properties",
-                element: <InventoryPage />,
+                element: (
+                  <LazyRoute>
+                    <InventoryPage />
+                  </LazyRoute>
+                ),
               },
               {
                 path: "/properties/new",
-                element: <CreatePropertyPage />,
+                element: (
+                  <LazyRoute>
+                    <CreatePropertyPage />
+                  </LazyRoute>
+                ),
               },
               {
                 path: "/properties/:id/edit",
-                element: <EditPropertyPage />,
+                element: (
+                  <LazyRoute>
+                    <EditPropertyPage />
+                  </LazyRoute>
+                ),
               },
               {
                 path: "/users",
-                element: <UsersPage />,
+                element: (
+                  <LazyRoute>
+                    <UsersPage />
+                  </LazyRoute>
+                ),
               },
             ],
           },
@@ -55,3 +106,15 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+function LazyRoute({ children }: { children: ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <FullPageStatus message="Preparing your workspace." title="Loading" />
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
