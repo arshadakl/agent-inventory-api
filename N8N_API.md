@@ -8,7 +8,7 @@ This guide explains how to connect n8n to the read-only real-estate inventory AP
 2. Open **API keys** from the sidebar.
 3. Select **Create API key**, enter a descriptive name such as `n8n production`, and copy the secret.
 
-The complete key is shown once only. Store it in n8n credentials, not directly in a workflow node. Delete and replace a key if it is lost or exposed.
+The complete key is shown when it is created and remains copyable only while the current API-keys page stays open. It is never stored in D1 or browser storage. Store it in n8n credentials, not directly in a workflow node. Delete and replace a key if it is lost or exposed.
 
 ## 2. Configure n8n
 

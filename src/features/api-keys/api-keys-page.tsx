@@ -34,7 +34,9 @@ export function ApiKeysPage() {
   const apiKeys = useApiKeys();
   const deleteApiKey = useDeleteApiKey();
   const { toast } = useToast();
-  const [secret, setSecret] = useState<string | null>(null);
+  const [recentlyCreatedKey, setRecentlyCreatedKey] =
+    useState<CreatedApiKey | null>(null);
+  const [secretDialogOpen, setSecretDialogOpen] = useState(false);
   const [keyToDelete, setKeyToDelete] = useState<ApiKey | null>(null);
 
   async function confirmDelete(): Promise<void> {
@@ -43,9 +45,24 @@ export function ApiKeysPage() {
     try {
       await deleteApiKey.mutateAsync(keyToDelete.id);
       toast({ title: "API key deleted" });
+      if (recentlyCreatedKey?.apiKey.id === keyToDelete.id) {
+        setRecentlyCreatedKey(null);
+      }
       setKeyToDelete(null);
     } catch {
       // Keep the confirmation open so the user can retry.
+    }
+  }
+
+  async function copyApiKey(secret: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(secret);
+      toast({ title: "API key copied" });
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Select and copy the key manually.",
+      });
     }
   }
 
@@ -64,7 +81,10 @@ export function ApiKeysPage() {
             </p>
           </div>
           <CreateApiKeyDialog
-            onCreated={(createdKey) => setSecret(createdKey.secret)}
+            onCreated={(createdKey) => {
+              setRecentlyCreatedKey(createdKey);
+              setSecretDialogOpen(true);
+            }}
           />
         </header>
 
@@ -124,19 +144,35 @@ export function ApiKeysPage() {
                       ? ` · Last used ${formatUnixDate(apiKey.lastUsedAt)}`
                       : " · Not used yet"}
                   </p>
-                  <Button
-                    aria-label={`Delete ${apiKey.name}`}
-                    onClick={() => {
-                      deleteApiKey.reset();
-                      setKeyToDelete(apiKey);
-                    }}
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    <Trash2 aria-hidden="true" className="size-4" />
-                    Delete
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    {recentlyCreatedKey?.apiKey.id === apiKey.id ? (
+                      <Button
+                        aria-label={`Copy ${apiKey.name}`}
+                        onClick={() =>
+                          void copyApiKey(recentlyCreatedKey.secret)
+                        }
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                      >
+                        <Copy aria-hidden="true" className="size-4" />
+                        Copy API key
+                      </Button>
+                    ) : null}
+                    <Button
+                      aria-label={`Delete ${apiKey.name}`}
+                      onClick={() => {
+                        deleteApiKey.reset();
+                        setKeyToDelete(apiKey);
+                      }}
+                      size="sm"
+                      type="button"
+                      variant="outline"
+                    >
+                      <Trash2 aria-hidden="true" className="size-4" />
+                      Delete
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -145,10 +181,10 @@ export function ApiKeysPage() {
       </div>
 
       <SecretDialog
-        onOpenChange={(open) => {
-          if (!open) setSecret(null);
-        }}
-        secret={secret}
+        onCopy={() => void copyApiKey(recentlyCreatedKey?.secret ?? "")}
+        onOpenChange={setSecretDialogOpen}
+        open={secretDialogOpen}
+        secret={recentlyCreatedKey?.secret ?? null}
       />
       <DeleteDialog
         apiKey={keyToDelete}
@@ -258,39 +294,31 @@ function CreateApiKeyDialog({
 }
 
 function SecretDialog({
+  onCopy,
   onOpenChange,
+  open,
   secret,
 }: {
+  onCopy: () => void;
   onOpenChange: (open: boolean) => void;
+  open: boolean;
   secret: string | null;
 }) {
-  const { toast } = useToast();
-  async function copySecret(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(secret ?? "");
-      toast({ title: "API key copied" });
-    } catch {
-      toast({
-        title: "Copy failed",
-        description: "Select and copy the key manually.",
-      });
-    }
-  }
   return (
-    <Dialog onOpenChange={onOpenChange} open={Boolean(secret)}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Copy your API key</DialogTitle>
           <DialogDescription>
-            Copy and store this key now. This is the only time the full secret
-            can be viewed.
+            Copy and store this key now. It remains available on this page until
+            you refresh or leave.
           </DialogDescription>
         </DialogHeader>
         <code className="block break-all rounded-md bg-muted p-3 text-xs">
           {secret}
         </code>
         <DialogFooter>
-          <Button onClick={() => void copySecret()} type="button">
+          <Button onClick={onCopy} type="button">
             <Copy aria-hidden="true" className="size-4" />
             Copy API key
           </Button>
