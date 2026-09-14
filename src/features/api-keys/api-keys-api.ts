@@ -22,6 +22,6 @@ export function createApiKey(input: CreateApiKeyInput) {
   });
 }
 
-export function revokeApiKey(id: string): Promise<void> {
+export function deleteApiKey(id: string): Promise<void> {
   return apiRequestVoid(`/api/api-keys/${id}`, { method: "DELETE" });
 }

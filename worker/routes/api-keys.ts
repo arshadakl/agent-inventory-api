@@ -13,7 +13,7 @@ import {
   ApiKeyNameConflictError,
   createApiKey,
   listApiKeys,
-  revokeApiKey,
+  deleteApiKey,
 } from "../services/api-keys.service";
 
 const apiKeyIdSchema = z.uuid();
@@ -84,7 +84,7 @@ apiKeyRoutes.delete("/:id", async (context) => {
     );
   }
 
-  if (!(await revokeApiKey(context.env.DB, parsedId.data))) {
+  if (!(await deleteApiKey(context.env.DB, parsedId.data))) {
     return errorResponse(
       context,
       404,

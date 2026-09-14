@@ -103,7 +103,7 @@ Do not create a registration endpoint. `scripts/create-initial-user.ts` must pro
 - Worker middleware protects every API route except login. Frontend route protection is only UX.
 - Reject attempts to delete the currently authenticated user with `409 CANNOT_DELETE_SELF`; deleting another user cascades their sessions.
 - Check `Origin` against the request host for `POST`, `PATCH`, `PUT`, and `DELETE` requests.
-- API keys use high-entropy `rei_live_...` secrets, store only SHA-256 hashes, are shown only at creation, and can be revoked. The n8n action route accepts Bearer keys without browser-origin checks; all dashboard routes continue to require sessions.
+- API keys use high-entropy `rei_live_...` secrets, store only SHA-256 hashes, are shown only at creation, and can be deleted. The n8n action route accepts Bearer keys without browser-origin checks; all dashboard routes continue to require sessions.
 - Use prepared D1 statements and bindings for every user-provided SQL value. Only construct known, trusted SQL fragments dynamically.
 
 ## Frontend behavior

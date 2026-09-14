@@ -109,4 +109,4 @@ Example search for a furnished 2-bedroom Dubai Marina rental under AED 90,000 an
 
 Supported actions are `search_properties`, `get_property`, `check_availability`, and `similar_properties`. Prices are AED; rent prices represent annual rent. `search_properties` returns available listings by default and accepts `q`, `location`, `listingType`, `propertyType`, `furnished`, `bedrooms`, `bathrooms`, `minPrice`, `maxPrice`, `status`, and `limit` (1–20). The other actions require `propertyId`; `similar_properties` also accepts `limit`.
 
-For production, add a Cloudflare rate-limit rule matching `/api/v1/actions/*`: 60 requests per minute per source IP, blocking for 60 seconds. Revoke a key immediately if it is exposed.
+For production, add a Cloudflare rate-limit rule matching `/api/v1/actions/*`: 60 requests per minute per source IP, blocking for 60 seconds. Delete a key immediately if it is exposed.

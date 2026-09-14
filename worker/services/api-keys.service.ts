@@ -86,15 +86,13 @@ export async function listApiKeys(database: D1Database): Promise<ApiKey[]> {
   return result.results.map(mapApiKeyRow);
 }
 
-export async function revokeApiKey(
+export async function deleteApiKey(
   database: D1Database,
   id: string,
 ): Promise<boolean> {
   const result = await database
-    .prepare(
-      "UPDATE api_keys SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL",
-    )
-    .bind(currentUnixTime(), id)
+    .prepare("DELETE FROM api_keys WHERE id = ?")
+    .bind(id)
     .run();
 
   return result.meta.changes > 0;

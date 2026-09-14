@@ -5,7 +5,7 @@ import type { CreateApiKeyInput } from "@shared/schemas/api-key";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 
-import { createApiKey, getApiKeys, revokeApiKey } from "./api-keys-api";
+import { createApiKey, deleteApiKey, getApiKeys } from "./api-keys-api";
 
 export function useApiKeys() {
   return useQuery({
@@ -23,9 +23,9 @@ export function useCreateApiKey() {
   });
 }
 
-export function useRevokeApiKey() {
+export function useDeleteApiKey() {
   return useMutation({
-    mutationFn: revokeApiKey,
+    mutationFn: deleteApiKey,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys });
     },

@@ -92,7 +92,7 @@ describe("API key API", () => {
     expect(unauthenticatedResponse.status).toBe(401);
   });
 
-  it("accepts a bearer key without an Origin header and rejects it after revocation", async () => {
+  it("accepts a bearer key without an Origin header and rejects it after deletion", async () => {
     const createdKey = await createApiKey("n8n action");
     const authorizedResponse = await request("/api/v1/actions/execute", {
       headers: { Authorization: `Bearer ${createdKey.secret}` },
@@ -107,11 +107,11 @@ describe("API key API", () => {
       .first<{ last_used_at: number | null }>();
     expect(storedKey?.last_used_at).toEqual(expect.any(Number));
 
-    const revokeResponse = await authenticatedRequest(
+    const deleteResponse = await authenticatedRequest(
       `/api/api-keys/${createdKey.apiKey.id}`,
       { method: "DELETE" },
     );
-    const revokedResponse = await request("/api/v1/actions/execute", {
+    const deletedResponse = await request("/api/v1/actions/execute", {
       headers: { Authorization: `Bearer ${createdKey.secret}` },
       method: "POST",
     });
@@ -120,8 +120,8 @@ describe("API key API", () => {
       method: "POST",
     });
 
-    expect(revokeResponse.status).toBe(204);
-    expect(revokedResponse.status).toBe(401);
+    expect(deleteResponse.status).toBe(204);
+    expect(deletedResponse.status).toBe(401);
     expect(cookieOnlyResponse.status).toBe(401);
   });
 });

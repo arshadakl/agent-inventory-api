@@ -8,7 +8,7 @@ This guide explains how to connect n8n to the read-only real-estate inventory AP
 2. Open **API keys** from the sidebar.
 3. Select **Create API key**, enter a descriptive name such as `n8n production`, and copy the secret.
 
-The complete key is shown once only. Store it in n8n credentials, not directly in a workflow node. Revoke and replace a key if it is lost or exposed.
+The complete key is shown once only. Store it in n8n credentials, not directly in a workflow node. Delete and replace a key if it is lost or exposed.
 
 ## 2. Configure n8n
 
@@ -171,7 +171,7 @@ Errors use the safe shared envelope:
 | Status | Meaning                                                    |
 | ------ | ---------------------------------------------------------- |
 | `400`  | Invalid JSON, unsupported action, or invalid action input. |
-| `401`  | Missing, malformed, unknown, or revoked API key.           |
+| `401`  | Missing, malformed, unknown, or deleted API key.           |
 | `404`  | Requested property does not exist.                         |
 | `500`  | Unexpected server error; no database details are returned. |
 
@@ -191,6 +191,6 @@ These require separate Worker actions and D1 data models before they can be inte
 ## 5. Security and operations
 
 - Use an n8n credential for the API key; do not paste it into workflow JSON or source control.
-- Revoke a key from the dashboard immediately if it is exposed.
+- Delete a key from the dashboard immediately if it is exposed.
 - Configure a Cloudflare rate-limit rule for `/api/v1/actions/*`: 60 requests per minute per source IP, blocking for 60 seconds.
 - The endpoint is intended for server-to-server n8n calls and does not require a browser `Origin` header.

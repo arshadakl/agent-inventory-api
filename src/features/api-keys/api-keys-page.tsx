@@ -28,22 +28,22 @@ import { ApiClientError } from "@/lib/api-client";
 import { formatUnixDate } from "@/lib/format";
 import { useToast } from "@/lib/toast-context";
 
-import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "./api-key-hooks";
+import { useApiKeys, useCreateApiKey, useDeleteApiKey } from "./api-key-hooks";
 
 export function ApiKeysPage() {
   const apiKeys = useApiKeys();
-  const revokeApiKey = useRevokeApiKey();
+  const deleteApiKey = useDeleteApiKey();
   const { toast } = useToast();
   const [secret, setSecret] = useState<string | null>(null);
-  const [keyToRevoke, setKeyToRevoke] = useState<ApiKey | null>(null);
+  const [keyToDelete, setKeyToDelete] = useState<ApiKey | null>(null);
 
-  async function confirmRevoke(): Promise<void> {
-    if (!keyToRevoke) return;
+  async function confirmDelete(): Promise<void> {
+    if (!keyToDelete) return;
 
     try {
-      await revokeApiKey.mutateAsync(keyToRevoke.id);
-      toast({ title: "API key revoked" });
-      setKeyToRevoke(null);
+      await deleteApiKey.mutateAsync(keyToDelete.id);
+      toast({ title: "API key deleted" });
+      setKeyToDelete(null);
     } catch {
       // Keep the confirmation open so the user can retry.
     }
@@ -70,7 +70,7 @@ export function ApiKeysPage() {
 
         <Alert>
           API keys are shown once when created. Copy the secret into n8n, then
-          revoke the key immediately if it is no longer needed.
+          delete the key immediately if it is no longer needed.
         </Alert>
 
         {apiKeys.isPending ? (
@@ -115,11 +115,7 @@ export function ApiKeysPage() {
                       {apiKey.prefix}…
                     </code>
                   </div>
-                  {apiKey.revokedAt ? (
-                    <Badge variant="secondary">Revoked</Badge>
-                  ) : (
-                    <Badge>Active</Badge>
-                  )}
+                  <Badge>Active</Badge>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4 px-5 pt-1 sm:flex-row sm:items-end sm:justify-between">
                   <p className="text-xs leading-5 text-muted-foreground">
@@ -129,18 +125,17 @@ export function ApiKeysPage() {
                       : " · Not used yet"}
                   </p>
                   <Button
-                    aria-label={`Revoke ${apiKey.name}`}
-                    disabled={Boolean(apiKey.revokedAt)}
+                    aria-label={`Delete ${apiKey.name}`}
                     onClick={() => {
-                      revokeApiKey.reset();
-                      setKeyToRevoke(apiKey);
+                      deleteApiKey.reset();
+                      setKeyToDelete(apiKey);
                     }}
                     size="sm"
                     type="button"
                     variant="outline"
                   >
                     <Trash2 aria-hidden="true" className="size-4" />
-                    Revoke
+                    Delete
                   </Button>
                 </CardContent>
               </Card>
@@ -155,13 +150,13 @@ export function ApiKeysPage() {
         }}
         secret={secret}
       />
-      <RevokeDialog
-        apiKey={keyToRevoke}
-        error={revokeApiKey.isError}
-        loading={revokeApiKey.isPending}
-        onConfirm={() => void confirmRevoke()}
+      <DeleteDialog
+        apiKey={keyToDelete}
+        error={deleteApiKey.isError}
+        loading={deleteApiKey.isPending}
+        onConfirm={() => void confirmDelete()}
         onOpenChange={(open) => {
-          if (!open && !revokeApiKey.isPending) setKeyToRevoke(null);
+          if (!open && !deleteApiKey.isPending) setKeyToDelete(null);
         }}
       />
     </main>
@@ -305,7 +300,7 @@ function SecretDialog({
   );
 }
 
-function RevokeDialog({
+function DeleteDialog({
   apiKey,
   error,
   loading,
@@ -322,14 +317,15 @@ function RevokeDialog({
     <Dialog onOpenChange={onOpenChange} open={Boolean(apiKey)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Revoke API key?</DialogTitle>
+          <DialogTitle>Delete API key?</DialogTitle>
           <DialogDescription>
-            n8n requests using {apiKey?.name} will stop working immediately.
+            This permanently removes {apiKey?.name}. n8n requests using this key
+            will stop working immediately.
           </DialogDescription>
         </DialogHeader>
         {error ? (
           <Alert className="border-destructive/30 bg-destructive/5 text-destructive">
-            Unable to revoke this key. Please try again.
+            Unable to delete this key. Please try again.
           </Alert>
         ) : null}
         <DialogFooter>
@@ -347,7 +343,7 @@ function RevokeDialog({
             type="button"
             variant="destructive"
           >
-            {loading ? "Revoking…" : "Revoke key"}
+            {loading ? "Deleting…" : "Delete key"}
           </Button>
         </DialogFooter>
       </DialogContent>
