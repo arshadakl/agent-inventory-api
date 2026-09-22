@@ -251,6 +251,40 @@ export async function listMessages(
   return { items, nextCursor, hasMore };
 }
 
+export async function listConversationHistory(
+  database: D1Database,
+  phoneE164: string,
+  limit: number,
+  withinMinutes: number,
+): Promise<Message[]> {
+  const cutoff = Math.floor(Date.now() / 1_000) - withinMinutes * 60;
+
+  const result = await database
+    .prepare(
+      `SELECT m.id, m.conversation_id, m.direction, m.type, m.text, m.caption,
+              m.provider_message_id, m.client_message_id, m.status, m.provider_timestamp,
+              m.error_code, m.error_message, m.reply_to_provider_message_id,
+              m.created_at, m.updated_at
+       FROM messages m
+       JOIN conversations c ON c.id = m.conversation_id
+       JOIN contacts ct ON ct.id = c.contact_id
+       WHERE ct.phone_e164 = ? AND m.created_at >= ?
+       ORDER BY m.created_at DESC
+       LIMIT ?`,
+    )
+    .bind(phoneE164, cutoff, limit)
+    .all<MessageRow>();
+
+  const items = await Promise.all(
+    result.results.map(async (row) => {
+      const attachments = await getAttachmentsByMessageId(database, row.id);
+      return mapMessage(row, attachments);
+    }),
+  );
+
+  return items.reverse();
+}
+
 export async function getAttachmentsByMessageId(
   database: D1Database,
   messageId: string,

@@ -5,12 +5,14 @@ import {
   type AvailabilityResult,
   type PropertySearchResult,
 } from "@shared/types/integration";
+import type { Message } from "@shared/types/inbox";
 import type { Property } from "@shared/types/property";
 import { Hono } from "hono";
 
 import type { WorkerEnvironment } from "../env";
 import { readJsonBody } from "../lib/request";
 import { errorResponse, getZodFieldErrors } from "../lib/response";
+import { listConversationHistory } from "../services/inbox/messages.service";
 import {
   findPropertyById,
   findSimilarProperties,
@@ -20,7 +22,8 @@ import {
 type IntegrationResult =
   | AvailabilityResult
   | PropertySearchResult
-  | { priceContext: typeof priceContext; property: Property };
+  | { priceContext: typeof priceContext; property: Property }
+  | { messages: Message[] };
 
 export const integrationActionRoutes = new Hono<WorkerEnvironment>();
 
@@ -101,6 +104,15 @@ async function executeAction(
         priceContext,
       };
     }
+    case "get_conversation_history":
+      return {
+        messages: await listConversationHistory(
+          database,
+          action.input.phoneE164,
+          action.input.limit,
+          action.input.withinMinutes,
+        ),
+      };
   }
 }
 
