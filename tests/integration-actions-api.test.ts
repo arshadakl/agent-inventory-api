@@ -11,6 +11,9 @@ const MATCHING_PROPERTY_ID = "00000000-0000-4000-8000-000000000703";
 
 beforeEach(async () => {
   await env.DB.prepare("DELETE FROM api_keys").run();
+  await env.DB.prepare("DELETE FROM messages").run();
+  await env.DB.prepare("DELETE FROM conversations").run();
+  await env.DB.prepare("DELETE FROM contacts").run();
   const tokenHash = await hashSessionToken(API_SECRET);
   await env.DB.prepare(
     `INSERT INTO api_keys (id, name, key_prefix, token_hash)
@@ -150,6 +153,49 @@ describe("n8n integration actions", () => {
     expect(invalidResponse.status).toBe(400);
     expect(missingResponse.status).toBe(404);
   });
+
+  it("returns recent conversation history for a known phone", async () => {
+    await seedConversationMessages();
+
+    const response = await actionRequest({
+      action: "get_conversation_history",
+      input: { phoneE164: "+971555000001", limit: 10, withinMinutes: 60 },
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      data: {
+        action: "get_conversation_history",
+        result: {
+          messages: [
+            { direction: "outbound", text: "Hello!" },
+            { direction: "inbound", text: "hi" },
+          ],
+        },
+      },
+    });
+  });
+
+  it("filters out messages older than the time window", async () => {
+    await seedConversationMessages({ oldCreatedAt: 1 });
+
+    const response = await actionRequest({
+      action: "get_conversation_history",
+      input: { phoneE164: "+971555000001", limit: 10, withinMinutes: 30 },
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    const messages = (
+      body as {
+        data: { result: { messages: { text: string }[] } };
+      }
+    ).data.result.messages;
+    const texts = messages.map((m) => m.text);
+    expect(texts).not.toContain("old message");
+    expect(texts).toContain("hi");
+  });
 });
 
 function actionRequest(body: unknown): Promise<Response> {
@@ -199,6 +245,79 @@ async function insertProperty(property: PropertySeed): Promise<void> {
       property.status ?? "available",
       1,
       1,
+    )
+    .run();
+}
+
+async function seedConversationMessages(options?: {
+  oldCreatedAt?: number;
+}): Promise<void> {
+  const now = Math.floor(Date.now() / 1_000);
+  const contactId = "00000000-0000-4000-8000-000000000721";
+  const conversationId = "00000000-0000-4000-8000-000000000722";
+
+  await env.DB.prepare(
+    `INSERT INTO contacts (id, phone_e164, display_name, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?)`,
+  )
+    .bind(contactId, "+971555000001", "Test User", now, now)
+    .run();
+
+  await env.DB.prepare(
+    `INSERT INTO conversations (id, contact_id, channel, last_message_at, last_message_preview, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      conversationId,
+      contactId,
+      "whatsapp",
+      now,
+      "hi",
+      now,
+      now,
+    )
+    .run();
+
+  await insertHistoryMessage(conversationId, now - 5, "inbound", "hi");
+  await insertHistoryMessage(conversationId, now - 10, "outbound", "Hello!");
+
+  if (options?.oldCreatedAt !== undefined) {
+    await insertHistoryMessage(
+      conversationId,
+      options.oldCreatedAt,
+      "inbound",
+      "old message",
+    );
+  }
+}
+
+async function insertHistoryMessage(
+  conversationId: string,
+  createdAt: number,
+  direction: "inbound" | "outbound",
+  text: string,
+): Promise<void> {
+  await env.DB.prepare(
+    `INSERT INTO messages (
+      id, conversation_id, direction, type, text, caption,
+      provider_message_id, client_message_id, status, provider_timestamp,
+      reply_to_provider_message_id, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(
+      crypto.randomUUID(),
+      conversationId,
+      direction,
+      "text",
+      text,
+      null,
+      null,
+      null,
+      "delivered",
+      createdAt,
+      null,
+      createdAt,
+      createdAt,
     )
     .run();
 }

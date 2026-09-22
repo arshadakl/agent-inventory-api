@@ -48,11 +48,24 @@ export const similarPropertiesActionSchema = z.object({
   input: propertyActionSchema.extend({ limit: actionLimitSchema }),
 });
 
+export const getConversationHistoryActionSchema = z.object({
+  action: z.literal("get_conversation_history"),
+  input: z.object({
+    phoneE164: z
+      .string()
+      .trim()
+      .regex(/^\+[1-9]\d{1,14}$/, "Must be a valid E.164 phone number."),
+    limit: z.number().int().min(1).max(50).default(8),
+    withinMinutes: z.number().int().min(1).max(1440).default(30),
+  }),
+});
+
 export const integrationActionSchema = z.discriminatedUnion("action", [
   searchPropertiesActionSchema,
   getPropertyActionSchema,
   checkAvailabilityActionSchema,
   similarPropertiesActionSchema,
+  getConversationHistoryActionSchema,
 ]);
 
 export type IntegrationAction = z.output<typeof integrationActionSchema>;
