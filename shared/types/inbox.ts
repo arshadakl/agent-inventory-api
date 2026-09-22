@@ -6,6 +6,7 @@ import type {
   messageAttachmentSchema,
   messageListQuerySchema,
   messageStatusEnum,
+  outboundMessageEventSchema,
   sendInboxMessageSchema,
   statusUpdateEventSchema,
 } from "../schemas/inbox";
@@ -163,6 +164,7 @@ export interface EventProcessResult {
 export type InboxEvent = z.output<typeof inboxEventSchema>;
 export type InboundMessageEvent = z.output<typeof inboundMessageEventSchema>;
 export type StatusUpdateEvent = z.output<typeof statusUpdateEventSchema>;
+export type OutboundMessageEvent = z.output<typeof outboundMessageEventSchema>;
 export type SendInboxMessageInput = z.output<typeof sendInboxMessageSchema>;
 export type ConversationListQuery = z.output<typeof conversationListQuerySchema>;
 export type MessageListQuery = z.output<typeof messageListQuerySchema>;

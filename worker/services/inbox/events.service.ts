@@ -1,6 +1,7 @@
 import type {
   InboxEvent,
   InboundMessageEvent,
+  OutboundMessageEvent,
   StatusUpdateEvent,
   EventProcessResult,
 } from "@shared/types/inbox";
@@ -54,9 +55,45 @@ export async function processInboxEvent(
     await handleInboundMessage(database, event);
   } else if (event.eventType === "message.status.updated") {
     await handleStatusUpdate(database, event);
+  } else if (event.eventType === "message.sent") {
+    await handleOutboundMessage(database, event);
   }
 
   return { eventId: event.eventId, duplicate: false };
+}
+
+async function handleOutboundMessage(
+  database: D1Database,
+  event: OutboundMessageEvent,
+): Promise<void> {
+  const contact = await upsertContact(database, event.to.phoneE164);
+
+  const conversation = await upsertConversation(
+    database,
+    contact.id,
+    event.channel,
+    event.message.text ?? event.message.caption ?? null,
+    parseTimestamp(event.message.statusAt),
+  );
+
+  const existingMsg = await findMessageByProviderId(
+    database,
+    event.message.providerMessageId,
+  );
+
+  if (!existingMsg) {
+    await insertMessage(database, {
+      conversationId: conversation.id,
+      direction: "outbound",
+      type: event.message.type,
+      text: event.message.text ?? null,
+      caption: event.message.caption ?? null,
+      providerMessageId: event.message.providerMessageId,
+      providerTimestamp: parseTimestamp(event.message.statusAt),
+      replyToProviderMessageId: event.message.replyToProviderMessageId ?? null,
+      status: "sent",
+    });
+  }
 }
 
 async function handleInboundMessage(
