@@ -1,5 +1,6 @@
 import type { CreateApiKeyInput } from "@shared/schemas/api-key";
 import { apiKeySchema } from "@shared/schemas/api-key";
+import type { InboxScope } from "@shared/schemas/inbox";
 import type { ApiKey, CreatedApiKey } from "@shared/types/api-key";
 import { z } from "zod";
 
@@ -12,6 +13,7 @@ const apiKeyRowSchema = z.object({
   id: z.string(),
   name: z.string(),
   key_prefix: z.string(),
+  scopes: z.string().nullable().optional(),
   created_at: z.number().int().nonnegative(),
   last_used_at: z.number().int().nonnegative().nullable(),
   revoked_at: z.number().int().nonnegative().nullable(),
@@ -43,15 +45,16 @@ export async function createApiKey(
   const tokenHash = await hashSessionToken(secret);
   const id = crypto.randomUUID();
   const now = currentUnixTime();
+  const scopesJson = input.scopes ? JSON.stringify(input.scopes) : null;
 
   try {
     await database
       .prepare(
         `INSERT INTO api_keys (
-          id, name, key_prefix, token_hash, created_by_user_id, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
+          id, name, key_prefix, token_hash, created_by_user_id, scopes, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
-      .bind(id, input.name, prefix, tokenHash, creatorId, now)
+      .bind(id, input.name, prefix, tokenHash, creatorId, scopesJson, now)
       .run();
   } catch (error) {
     if (isApiKeyNameConflict(error)) {
@@ -66,6 +69,7 @@ export async function createApiKey(
       id,
       name: input.name,
       prefix,
+      scopes: input.scopes ?? null,
       createdAt: now,
       lastUsedAt: null,
       revokedAt: null,
@@ -77,7 +81,7 @@ export async function createApiKey(
 export async function listApiKeys(database: D1Database): Promise<ApiKey[]> {
   const result = await database
     .prepare(
-      `SELECT id, name, key_prefix, created_at, last_used_at, revoked_at
+      `SELECT id, name, key_prefix, scopes, created_at, last_used_at, revoked_at
        FROM api_keys
        ORDER BY created_at DESC, id DESC`,
     )
@@ -98,10 +102,15 @@ export async function deleteApiKey(
   return result.meta.changes > 0;
 }
 
-export async function authenticateApiKey(
+export interface ApiKeyAuthResult {
+  apiKeyId: string;
+  scopes: InboxScope[] | null;
+}
+
+export async function authenticateApiKeyWithScopes(
   database: D1Database,
   authorization: string | undefined,
-): Promise<string | null> {
+): Promise<ApiKeyAuthResult | null> {
   const token = readBearerToken(authorization);
 
   if (!token || !token.startsWith(API_KEY_PREFIX)) {
@@ -111,11 +120,11 @@ export async function authenticateApiKey(
   const tokenHash = await hashSessionToken(token);
   const record = await database
     .prepare(
-      `SELECT id FROM api_keys
+      `SELECT id, scopes FROM api_keys
        WHERE token_hash = ? AND revoked_at IS NULL`,
     )
     .bind(tokenHash)
-    .first<{ id: string }>();
+    .first<{ id: string; scopes: string | null }>();
 
   if (!record) {
     return null;
@@ -126,16 +135,32 @@ export async function authenticateApiKey(
     .bind(currentUnixTime(), record.id)
     .run();
 
-  return record.id;
+  const scopes = record.scopes
+    ? (JSON.parse(record.scopes) as InboxScope[])
+    : null;
+
+  return { apiKeyId: record.id, scopes };
+}
+
+export async function authenticateApiKey(
+  database: D1Database,
+  authorization: string | undefined,
+): Promise<string | null> {
+  const result = await authenticateApiKeyWithScopes(database, authorization);
+  return result?.apiKeyId ?? null;
 }
 
 function mapApiKeyRow(row: Record<string, unknown>): ApiKey {
   const key = apiKeyRowSchema.parse(row);
+  const scopes = key.scopes
+    ? (JSON.parse(key.scopes) as InboxScope[])
+    : null;
 
   return apiKeySchema.parse({
     id: key.id,
     name: key.name,
     prefix: key.key_prefix,
+    scopes,
     createdAt: key.created_at,
     lastUsedAt: key.last_used_at,
     revokedAt: key.revoked_at,
