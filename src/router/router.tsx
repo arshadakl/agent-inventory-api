@@ -32,6 +32,9 @@ const UsersPage = lazy(async () => ({
 const ApiKeysPage = lazy(async () => ({
   default: (await import("@/features/api-keys/api-keys-page")).ApiKeysPage,
 }));
+const InboxPage = lazy(async () => ({
+  default: (await import("@/features/inbox/inbox-page")).InboxPage,
+}));
 
 export const router = createBrowserRouter([
   {
@@ -105,6 +108,14 @@ export const router = createBrowserRouter([
                 element: (
                   <LazyRoute>
                     <ApiKeysPage />
+                  </LazyRoute>
+                ),
+              },
+              {
+                path: "/inbox",
+                element: (
+                  <LazyRoute>
+                    <InboxPage />
                   </LazyRoute>
                 ),
               },
