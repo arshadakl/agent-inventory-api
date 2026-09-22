@@ -16,4 +16,10 @@
       "migrations_dir": "migrations",
     },
   ],
+  "r2_buckets": [
+    {
+      "binding": "INBOX_MEDIA",
+      "bucket_name": "inbox-media",
+    },
+  ],
 }

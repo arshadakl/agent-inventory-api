@@ -5,6 +5,7 @@ import {
   LoaderCircle,
   LogOut,
   Menu,
+  MessageSquare,
   Users,
   Warehouse,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import { useCurrentUser, useLogout } from "@/features/auth/auth-hooks";
 const navigation = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Properties", to: "/properties", icon: Warehouse },
+  { label: "Inbox", to: "/inbox", icon: MessageSquare },
   { label: "Users", to: "/users", icon: Users },
   { label: "API keys", to: "/api-keys", icon: KeyRound },
 ] as const;
