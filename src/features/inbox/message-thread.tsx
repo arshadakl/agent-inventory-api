@@ -23,7 +23,7 @@ export function MessageThread({
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasMarkedReadRef = useRef(false);
 
-  const messages = data?.items ?? [];
+  const messages = [...(data?.items ?? [])].reverse();
   const hasUnread = messages.some(
     (m) => m.direction === "inbound" && m.status !== "read",
   );

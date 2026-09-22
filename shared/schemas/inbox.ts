@@ -37,6 +37,7 @@ export const MESSAGE_STATUS_ORDER: Record<MessageStatus, number> = {
 export const inboxEventTypeEnum = z.enum([
   "message.received",
   "message.status.updated",
+  "message.sent",
 ]);
 export type InboxEventType = z.output<typeof inboxEventTypeEnum>;
 
@@ -104,13 +105,33 @@ export const statusUpdateEventSchema = z.object({
   }),
 });
 
+export const outboundMessageEventSchema = z.object({
+  eventId: z.string().min(1),
+  eventType: z.literal("message.sent"),
+  provider: z.string().min(1),
+  channel: z.literal("whatsapp"),
+  occurredAt: z.string().datetime(),
+  to: z.object({ phoneE164: phoneE164Schema }),
+  message: z.object({
+    providerMessageId: z.string().min(1),
+    type: messageTypeEnum,
+    text: z.string().nullable().optional(),
+    caption: z.string().nullable().optional(),
+    attachmentIds: z.array(z.string().uuid()).default([]),
+    replyToProviderMessageId: z.string().nullable().optional(),
+    statusAt: z.string().datetime(),
+  }),
+});
+
 export const inboxEventSchema = z.discriminatedUnion("eventType", [
   inboundMessageEventSchema,
   statusUpdateEventSchema,
+  outboundMessageEventSchema,
 ]);
 
 export type InboundMessageEvent = z.output<typeof inboundMessageEventSchema>;
 export type StatusUpdateEvent = z.output<typeof statusUpdateEventSchema>;
+export type OutboundMessageEvent = z.output<typeof outboundMessageEventSchema>;
 export type InboxEvent = z.output<typeof inboxEventSchema>;
 
 // --- Outbound Send (Dashboard -> Worker -> n8n) ---
